@@ -32,7 +32,7 @@ class ShipBot:
     def __init__(self, region=(500, 120, 900, 770), confidence_threshold=0.7):
         # Paths to the target images
         self.target_level_paths = ['assets/lvl_aggro.png', 'assets/lvl.png']
-        self.chest_skin_paths = ['assets/summer_chest1.png', 'assets/summer_chest2.png', 'assets/summer_chest3.png']
+        self.chest_skin_paths = ['assets/dragon_chest1.png', 'assets/dragon_chest2.png', 'assets/dragon_chest3.png']
         self.movement_target_path = 'assets/movement_target.png'
         self.leave_harbour_path = 'assets/set_sail.png'
         self.respawn_path = 'assets/respawn.png'
@@ -186,6 +186,7 @@ class ShipBot:
 
     def movement_recognition(self, screenshot):
         result = cv2.matchTemplate(screenshot, self.movement_target, cv2.TM_CCOEFF_NORMED)
+        self.save_screenshot(screenshot, "temp")
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
         # Check if the match exceeds the confidence threshold
@@ -438,20 +439,14 @@ class ShipBot:
                 # 1. item
                 pyautogui.click(420, 340)
                 # 2. item
-                #sleep(random.uniform(0,2))
-                #pyautogui.click(420, 390)
+                sleep(random.uniform(0,2))
+                pyautogui.click(420, 390)
                 # 3. item
                 #sleep(random.uniform(0,0.2))
                 #pyautogui.click(420, 440)
-                print("Clicked at (420, 340)")
+                print("Clicked at (420, 340)") 
 
-                current_time = time.time()
-                if current_time - last_key_press_time >= 67:
-                    pyautogui.press('6')
-                    print("Pressed key '6'")
-                    last_key_press_time = current_time
-
-                wait_time = random.uniform(0.1, 2)
+                wait_time = random.uniform(0.1, 4)
                 print(f"Waiting for {wait_time:.2f} seconds...")
                 time.sleep(wait_time)
                 if keyboard.is_pressed('q'):
@@ -552,7 +547,7 @@ if __name__ == "__main__":
     # Instantiate the bot and start it
     try:
         bot = ShipBot()
-        bot.random_click_loop()
-        #bot.run()
+        #bot.random_click_loop()
+        bot.run()
     except ValueError as e:
         print(f"Error: {e}")
