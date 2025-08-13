@@ -1,35 +1,50 @@
 import threading
+
+import cv2
 import requests
 from datetime import datetime
 import pytz
+from io import BytesIO
 
 WEBHOOK_URL = "https://discord.com/api/webhooks/1329435238149128232/4dSqMMpFtk-VVvBGqmK8HRi_wsbkLP0mT1rnLK0fBedM9zLCjhpDSpIlzfWZHlGaOp1D"
 europe_timezone = pytz.timezone("Europe/Paris")
 
-def doUpdateOnDiscord(image_path):
+def doUpdateOnDiscord(image_array):
     """
     Sends an image to Discord using a webhook.
 
-    :param image_path: Path to the image file to be uploaded.
+    :param image_array:
     """
-    with open(image_path, "rb") as image_file:
-        current_time = datetime.now(europe_timezone).strftime("%Y-%m-%d %H:%M:%S")
-        # Files should be sent as multipart form data
-        files = {"file": image_file}
-        payload = {"content": f"Here's the {current_time} screenshot!"}
-        response = requests.post(WEBHOOK_URL, data=payload, files=files)
+    if image_array is None:
+        print("No image to send!")
+        return
 
-        if response.status_code == 204:
-            print("Screenshot sent successfully!")
-        else:
-            print(f"Failed to send screenshot: {response.status_code} - {response.text}")
+    success, encoded_image = cv2.imencode('.png', image_array)
+    if not success:
+        print("Failed to encode image!")
+        return
 
-def send_screenshot_async(image_path):
+    image_bytes = BytesIO(encoded_image.tobytes())
+
+    current_time = datetime.now(europe_timezone).strftime("%Y-%m-%d %H:%M:%S")
+    # Files should be sent as multipart form data
+    files = {
+        "file": ("screenshot.png", image_bytes, "image/png")
+    }
+    payload = {"content": f"Here's the {current_time} screenshot!"}
+    response = requests.post(WEBHOOK_URL, data=payload, files=files)
+
+    if response.status_code == 200:
+        print("Screenshot sent successfully!")
+    else:
+        print(f"Failed to send screenshot: {response.status_code} - {response.text}")
+
+def send_screenshot_async(image_file):
     """
     Runs the screenshot upload in a separate thread.
 
-    :param image_path: Path to the image file to be uploaded.
+    :param image_file: Image file to be uploaded.
     """
-    thread = threading.Thread(target=doUpdateOnDiscord, args=(image_path,))
+    thread = threading.Thread(target=doUpdateOnDiscord, args=(image_file,))
     thread.start()
     print("Screenshot upload started in a separate thread.")

@@ -1,0 +1,96 @@
+import sys
+import threading
+
+from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QPushButton, QComboBox, QListWidget, \
+    QAbstractItemView, QVBoxLayout, QCheckBox, QLabel
+from PyQt6.QtCore import Qt
+from ship_bot import ShipBot
+import keyboard
+
+class BotWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Stormibot")
+        self.resize(500,400)
+        self._setup_ui()
+
+        self.bot = ShipBot()
+        self.bot_thread = None  # placeholder for the bot thread
+
+    def _setup_ui(self):
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        parent_layout = QHBoxLayout()
+        left_box_layout = QHBoxLayout()
+        right_box_layout = QVBoxLayout()
+        central_widget.setLayout(parent_layout)
+
+        #Start button
+        self.start_button = QPushButton("Start")
+        self.start_button.setFixedSize(200,200)
+
+        #Stop button
+        self.stop_button = QPushButton("Stop")
+        self.stop_button.setFixedSize(200,200)
+
+        #Attack all Checkbox
+        attack_all_layout = QHBoxLayout()  # Horizontal layout for label + checkbox
+        self.attack_all_checkbox = QCheckBox()
+        attack_all_label = QLabel("Attack all levels")
+        attack_all_layout.addWidget(attack_all_label)
+        attack_all_layout.addWidget(self.attack_all_checkbox)
+        attack_all_widget = QWidget()
+        attack_all_widget.setLayout(attack_all_layout)
+
+        #Target level selector
+        self.target_level_list = QListWidget()
+        self.target_level_list.setFixedSize(200,100)
+        self.target_level_list.addItems(["10-19", "20-29", "30-39"])
+        self.target_level_list.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+
+        #Signal connections
+        self.stop_button.clicked.connect(self.stop_bot)
+        self.start_button.clicked.connect(self.start_bot)
+        self.attack_all_checkbox.stateChanged.connect(self.toggle_list)
+
+        left_box_layout.addWidget(self.start_button)
+        left_box_layout.addWidget(self.stop_button)
+
+        right_box_layout.addWidget(attack_all_widget, alignment=Qt.AlignmentFlag.AlignBottom) # needs fixing still
+        right_box_layout.addWidget(self.target_level_list, alignment=Qt.AlignmentFlag.AlignTop) # needs fixing still
+
+        parent_layout.addLayout(left_box_layout)
+        parent_layout.addLayout(right_box_layout)
+
+    def toggle_list(self):
+        # If checkbox is checked, disable the list; otherwise enable it
+        if self.attack_all_checkbox.isChecked():
+            self.target_level_list.setDisabled(True)
+        else:
+            self.target_level_list.setDisabled(False)
+
+    def get_selected_levels(self):
+        return [item.text() for item in self.target_level_list.selectedItems()]
+
+    def start_bot(self):
+        if self.attack_all_checkbox.isChecked():
+            self.bot.set_attack_levels(["all"])
+        else:
+            self.bot.set_attack_levels(self.get_selected_levels())
+
+        if self.bot_thread is None or not self.bot_thread.is_alive():
+            # Run the bot in a separate thread
+            self.bot_thread = threading.Thread(target=self.bot.run)
+            self.bot_thread.start()
+            print("Bot thread started")
+
+    def stop_bot(self):
+        self.bot.stop_program()
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = BotWindow()
+    keyboard.add_hotkey('q', window.bot.stop_program)
+    window.show()
+    sys.exit(app.exec())

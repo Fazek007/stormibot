@@ -27,7 +27,7 @@ class ScreenshotCapturer:
 
     def capture_screenshot_specific(self, min_x, min_y, width, height):
         region = (min_x, min_y, width, height)  # Define the region as a tuple
-        screenshot = pyautogui.screenshot(region=region)  # Pass the region as a named argument
+        screenshot = pyautogui.screenshot(region=region)
         screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)  # Convert the screenshot
         return screenshot
 

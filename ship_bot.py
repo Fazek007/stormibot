@@ -1,38 +1,54 @@
-import math
-import queue
 import random
 import threading
 from random import randint
 from time import sleep
+import os
+import sys
 
-from PIL import Image
 import keyboard
 import cv2
 import numpy as np
 import pyautogui
 import time
-import pytesseract
-from pip._vendor.tomli._parser import Key
 
 import DiscordUpdater
 from screenshot_capturer import ScreenshotCapturer
 from coordinate_recognizer import CoordinateRecognizer
 
 SCREENCENTER = (960, 555)
-stop_flag = False
 
-def stop_program():
-    global stop_flag
-    stop_flag = True
+def use_powerups():
+    sleep(2)
+    pyautogui.leftClick(700, 700)
+    keyboard.press_and_release('7')
+    keyboard.press_and_release('7')
+    sleep(1)
+    keyboard.press_and_release('8')
+    keyboard.press_and_release('8')
+    sleep(1)
+    keyboard.press_and_release('9')
+    keyboard.press_and_release('9')
 
-keyboard.add_hotkey('q', stop_program)
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+
+def get_project_root():
+    if getattr(sys, 'frozen', False):  # running as .exe
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+PROJECT_ROOT = get_project_root()
+SCREENSHOT_DIR = os.path.join(PROJECT_ROOT, "screenshots")
+os.makedirs(SCREENSHOT_DIR, exist_ok=True)  # ensure folder exists
 
 class ShipBot:
-    def __init__(self, region=(500, 120, 900, 770), confidence_threshold=0.7):
-        # Paths to the target images
-        self.target_level_paths = ['assets/lvl_aggro.png', 'assets/lvl.png']
-        self.chest_skin_paths = ['assets/dragon_chest1.png', 'assets/dragon_chest2.png', 'assets/dragon_chest3.png']
+    def __init__(self, region=(500, 120, 900, 760), confidence_threshold=0.7):
+        self.level_image_map = {
+            "all"  : ['assets/lvl_aggro.png', 'assets/lvl.png'],
+            "10-19": ['assets/lvl1x_aggro.png', 'assets/lvl1x.png'],
+            "20-29": ['assets/lvl2x_aggro.png', 'assets/lvl2x.png'],
+            "30-39": ['assets/lvl3x_aggro.png', 'assets/lvl3x.png']
+        }
+        self.enemy_targets = []
+        self.chest_skin_paths = ['assets/summer_chest1.png', 'assets/summer_chest2.png', 'assets/summer_chest3.png']
         self.movement_target_path = 'assets/movement_target.png'
         self.leave_harbour_path = 'assets/set_sail.png'
         self.respawn_path = 'assets/respawn.png'
@@ -40,13 +56,18 @@ class ShipBot:
         self.attack_symbol_path = 'assets/attack_symbol.png'
         self.gold_repair_symbol_path = 'assets/gold_rep_snow.png'
         self.green_hp_path = 'assets/green_hp.png'
-        self.burning_player_ship = 'assets/ship_burning_uniform.png'
+        self.burning_player_ship_path = 'assets/ship_burning_uniform.png'
+        self.npc_icon_path = 'assets/npc_icon.png'
+        self.reconnect_button_path = 'assets/reconnect_button.png'
+        self.x_button_path = 'assets/x_button.png'
+        self.daily_login_path = 'assets/daily_login_bonus_text.png'
 
         self.isMoving = False
         self.isAttacking = False
         self.isChestFound = False
         self.isRecovering = False
         self.isMovingForChest = False
+        self.stop_flag = False
 
         # Region of the screen to capture for recognition
         self.region = region
@@ -61,7 +82,6 @@ class ShipBot:
         self.coordinate_recognizer = CoordinateRecognizer()
 
         # Load template images
-        self.enemy_targets = [self.load_image(path) for path in self.target_level_paths]
         self.chest_targets = [self.load_image(path) for path in self.chest_skin_paths]
         self.movement_target = self.load_image(self.movement_target_path)
         self.leave_harbour_button = self.load_image(self.leave_harbour_path)
@@ -70,19 +90,32 @@ class ShipBot:
         self.attack_symbol = self.load_image(self.attack_symbol_path)
         self.gold_repair_symbol = self.load_image(self.gold_repair_symbol_path)
         self.green_hp = self.load_image(self.green_hp_path)
-        self.player_low_hp = self.load_image(self.burning_player_ship)
+        self.player_low_hp = self.load_image(self.burning_player_ship_path)
+        self.npc_icon = self.load_image(self.npc_icon_path)
+        self.reconnect_button = self.load_image(self.reconnect_button_path)
+        self.x_button = self.load_image(self.x_button_path)
+        self.daily_login = self.load_image(self.daily_login_path)
 
         # Template dimensions
-        self.template_h, self.template_w = self.enemy_targets[0].shape[:2]
         self.leave_harbour_button_h, self.leave_harbour_button_w = self.leave_harbour_button.shape[:2]
         self.respawn_button_h, self.respawn_button_w = self.respawn_button.shape[:2]
 
+    def set_attack_levels(self, levels: list[str]):
+        self.enemy_targets = []
+        for level in levels:
+            for path in self.level_image_map.get(level, []):
+                self.enemy_targets.append(self.load_image(path))
+
+    def stop_program(self):
+        self.stop_flag = True
+        print("The program has been stopped by the user")
+
     def load_image(self, image_path):
-        """ Load an image and return it, or None if there's an error. """
-        image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-        if image is None:
-            print(f"Error loading image: {image_path}")
-        return image
+            """ Load an image and return it, or None if there's an error. """
+            image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+            if image is None:
+                print(f"Error loading image: {image_path}")
+            return image
 
     def calculate_distance(self, x, y):
         dx = x - SCREENCENTER[0]
@@ -99,7 +132,7 @@ class ShipBot:
 
         return halfway_x, halfway_y
 
-    def ship_recognition(self, screenshot):
+    def ship_recognition_v2(self, screenshot):
         if self.isAttacking:  # Skip ship recognition if the ship is already moving
             #print("The ship is currently attacking. Skipping ship recognition.")
             return False
@@ -118,15 +151,21 @@ class ShipBot:
             if max_val >= 0.85:
                 # Calculate the center of the matched area
                 match_x, match_y = max_loc
-                center_x = (match_x + self.template_w // 2) + 36
-                center_y = (match_y + self.template_h // 2) + 30
+                center_x = match_x + 36 # i removed template_W
+                center_y = match_y + 30
 
                 # Apply the region offset and return the final position
                 final_x = self.region[0] + center_x
                 final_y = self.region[1] + center_y
-                print(f"Found ship at: ({final_x}, {final_y})")
+                #print(f"Found ship at: ({final_x}, {final_y})")
 
-                pyautogui.doubleClick(final_x, final_y)
+                pyautogui.click(final_x, final_y)
+
+                npc_found = self.npc_recognition()
+
+                if npc_found:
+                    keyboard.press('f')
+
                 # TODO distance based actions
                 if not self.isMoving:
                     distance = self.calculate_distance(final_x, final_y)
@@ -139,6 +178,70 @@ class ShipBot:
         return False  # No ships were found
 
     #def bm_ship_recognition(self, screenshot, prev_frame=None):
+
+    npc_counter : int = 0
+    non_npc_counter : int = 0
+
+    def npc_recognition(self):
+        screenshot = self.screenshot_capturer.capture_screenshot_specific(280, 60, 50, 50)
+        self.save_screenshot(screenshot, "temp")
+        result = cv2.matchTemplate(screenshot, self.npc_icon, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+        if max_val >= 0.92:
+            self.npc_counter += 1
+            print("This is an npc:", self.npc_counter)
+            return True
+        else:
+            self.non_npc_counter += 1
+            print("This is not an npc:", self.non_npc_counter)
+            return False
+
+    def disconnected_recognition(self):
+        screenshot = self.screenshot_capturer.get_latest_screenshot()
+        result = cv2.matchTemplate(screenshot, self.reconnect_button, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+        if max_val >= 0.9:
+            # The dimensions of the disconnect_button are 110x24
+            self.clickCenter(110,24, max_loc)
+            print("The connection has been lost")
+            return True
+        else:
+            print("The game is running fine")
+            return False
+
+    def x_recognition(self):
+        screenshot = self.screenshot_capturer.get_latest_screenshot()
+        result = cv2.matchTemplate(screenshot, self.x_button, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+        if max_val >= 0.9:
+            # The dimensions of the x_button are 28x28
+            self.clickCenter(28,28, max_loc)
+            print("There is a window to close")
+            return True
+        else:
+            print("There are no closable windows")
+            return False
+
+    def daily_bonus_recognition(self):
+        screenshot = self.screenshot_capturer.get_latest_screenshot()
+        self.save_screenshot(screenshot, 'temp')
+        result = cv2.matchTemplate(screenshot, self.daily_login, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+        if max_val >= 0.8:
+            result = cv2.matchTemplate(screenshot, self.daily_login, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            # The dimensions of the accept_button are 80x20
+            self.clickCenter(80,20, max_loc)
+
+            print("Daily rewards accepted")
+            return True
+        else:
+            print("There is no daily login bonus")
+            return False
 
     def high_hp_recognition(self):
         if not self.isRecovering:
@@ -159,7 +262,7 @@ class ShipBot:
     def chest_recognition(self, screenshot):
         #TODO movement recogniton type of shit
         if self.isRecovering or self.isMovingForChest:
-            print("The ship is currently moving. Skipping chest recognition.")
+            #print("The ship is currently moving. Skipping chest recognition.")
             return False
 
         for chest_target in self.chest_targets:
@@ -170,8 +273,8 @@ class ShipBot:
             if max_val >= self.confidence_threshold:
                 # Calculate the center of the matched area
                 match_x, match_y = max_loc
-                center_x = (match_x + self.template_w // 2)
-                center_y = (match_y + self.template_h // 2)
+                center_x = match_x
+                center_y = match_y # i removed template_W
 
                 # Apply the region offset and return the final position
                 final_x = self.region[0] + center_x
@@ -227,6 +330,9 @@ class ShipBot:
     def repair(self):
        if not self.repair_recognition():
          keyboard.press_and_release('0')
+         keyboard.press_and_release('1')
+         self.press_ctrl_with_key('2')
+
 
     def inHarbour(self, screenshot):
         result = cv2.matchTemplate(screenshot, self.leave_harbour_button, cv2.TM_CCOEFF_NORMED)
@@ -261,6 +367,7 @@ class ShipBot:
             sleep(5)
             pyautogui.leftClick(700, 700)
             self.repair()
+            use_powerups()
             sleep(90)
             newscreenshot = pyautogui.screenshot(region=self.region)
             newscreenshot = cv2.cvtColor(np.array(newscreenshot), cv2.COLOR_RGB2BGR)
@@ -439,14 +546,15 @@ class ShipBot:
                 # 1. item
                 pyautogui.click(420, 340)
                 # 2. item
-                sleep(random.uniform(0,2))
-                pyautogui.click(420, 390)
+                #sleep(random.uniform(0,2))
+                #pyautogui.click(420, 390)
                 # 3. item
                 #sleep(random.uniform(0,0.2))
                 #pyautogui.click(420, 440)
-                print("Clicked at (420, 340)") 
+                #print("Clicked at (420, 340)")
 
-                wait_time = random.uniform(0.1, 4)
+                pyautogui.click(950, 585)
+                wait_time = random.uniform(0.1, 3)
                 print(f"Waiting for {wait_time:.2f} seconds...")
                 time.sleep(wait_time)
                 if keyboard.is_pressed('q'):
@@ -465,89 +573,59 @@ class ShipBot:
         pyautogui.hotkey('ctrl', key)
         print(f"Pressed Ctrl + {key}")
 
-
     def run(self):
+        self.stop_flag = False
         self.screenshot_capturer.start_capturing()
-        #self.coordinate_recognizer.start_coordinate_recognition()
+        DiscordUpdater.send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
         sleep(5)
         """ Main loop of the bot. """
         last_respawn_time = time.time()
         last_harbour_time = time.time()
         last_repair_time = time.time()
-        last_low_hp_time = time.time()
         last_screenshot_time = time.time()
-        last_direction_change_time = time.time()
+        last_disconnect_check_time = time.time()
+        last_window_closed_time = time.time()
 
         try:
-            while not stop_flag:
+            while not self.stop_flag:
                 self.movement_recognition(self.screenshot_capturer.get_latest_screenshot())
                 self.attack_recognition()
 
                 self.chest_recognition(self.screenshot_capturer.get_latest_screenshot())
-                self.ship_recognition(self.screenshot_capturer.get_latest_screenshot())
+                self.ship_recognition_v2(self.screenshot_capturer.get_latest_screenshot())
 
-                #self.sea_movement(self.coordinate_recognizer.get_latest_result())
                 self.random_movement()
                 # Periodic tasks
                 current_time = time.time()
-               # if current_time - last_low_hp_time >= randint(5,7):
-               #     self.low_hp_recogniton()
-               #     self.high_hp_recognition()
 
-                if current_time - last_respawn_time >= randint(30, 40):
+                if current_time - last_respawn_time >= randint(30, 45):
                     last_respawn_time = current_time
                     if self.respawn(self.screenshot_capturer.get_latest_screenshot()):
-                        keyboard.press('7')
-                        sleep(1)
-                        keyboard.press('8')
-                        sleep(1)
-                        keyboard.press('9')
-
                         last_harbour_time = current_time
 
                 if current_time - last_harbour_time >= randint(40, 50):
                     self.inHarbour(self.screenshot_capturer.get_latest_screenshot())
                     last_harbour_time = current_time
 
-                if current_time - last_repair_time >= randint(5,10):
+                if current_time - last_repair_time >= randint(3,6):
                     self.repair()
-                    self.press_ctrl_with_key('2')
                     last_repair_time = current_time
 
                 if current_time - last_screenshot_time >= 1800:
-                    self.save_screenshot(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015),"riches")
-                    DiscordUpdater.send_screenshot_async("screenshots/riches.png")
+                    DiscordUpdater.send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
                     last_screenshot_time = current_time
-                if current_time - last_direction_change_time >= 5:
-                    #print(self.coordinate_recognizer.get_latest_result())
-                    last_direction_change_time = current_time
+                if current_time - last_disconnect_check_time >= 600:
+                    self.disconnected_recognition()
+                    last_disconnect_check_time = current_time
+
+                if current_time - last_window_closed_time >= 500:
+                    self.x_recognition()
+                    last_window_closed_time = current_time
+
+
 
 
         except Exception as e:
             print(f"An error occurred: {e}")
         finally:
             self.screenshot_capturer.stop_capturing()
-            #self.coordinate_recognizer.stop()
-
-    def bm_run(self):
-        sleep(5)
-        prev_frame = None
-
-        try:
-            while not keyboard.is_pressed('q'):  # Run until 'q' is pressed
-              self.sea_movement(3)
-        except Exception as e:
-            print(f"An error occurred: {e}")
-        finally:
-            self.stop_capturing()
-
-
-if __name__ == "__main__":
-
-    # Instantiate the bot and start it
-    try:
-        bot = ShipBot()
-        #bot.random_click_loop()
-        bot.run()
-    except ValueError as e:
-        print(f"Error: {e}")
