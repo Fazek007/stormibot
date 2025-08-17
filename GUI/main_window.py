@@ -3,7 +3,7 @@ import threading
 
 from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QPushButton, QListWidget, \
     QAbstractItemView, QVBoxLayout, QCheckBox, QLabel
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QSettings
 from Core.ship_bot import ShipBot
 from stop_watch import StopwatchWidget
 from death_counter import DeathCounter
@@ -13,6 +13,7 @@ class BotWindow(QMainWindow):
     stop_signal = pyqtSignal()
     def __init__(self):
         super().__init__()
+        self.settings = QSettings("SomeOrg","Stormibot")
         self.stop_signal.connect(self.stop_bot)
         self.setWindowTitle("Stormibot")
         self.resize(400,200)
@@ -20,7 +21,7 @@ class BotWindow(QMainWindow):
         self.bot_thread = None  # placeholder for the bot thread
 
         self._setup_ui()
-
+        self.load_settings()
     def _setup_ui(self):
         #QMainWindow must use a central widget
         central_widget = QWidget()
@@ -116,6 +117,30 @@ class BotWindow(QMainWindow):
 
     def handle_bot_died(self):
         self.update_statistics()
+
+    def load_settings(self):
+        saved_levels = self.settings.value("attack_levels", [])
+        saved_attack_all = self.settings.value("attack_all", False, bool)
+
+        self.attack_all_checkbox.setChecked(saved_attack_all)
+
+        if not saved_attack_all:
+            for i in range(self.target_level_list.count()):
+                item = self.target_level_list.item(i)
+                item.setSelected(item.text() in saved_levels)
+
+    def save_settings(self):
+        current_levels = [item.text() for item in self.target_level_list.selectedItems()]
+
+        attack_all_checked = self.attack_all_checkbox.isChecked()
+
+        self.settings.setValue("attack_levels", current_levels)
+        self.settings.setValue("attack_all", attack_all_checked)
+
+    def closeEvent(self, event):
+        self.save_settings()
+        event.accept()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
