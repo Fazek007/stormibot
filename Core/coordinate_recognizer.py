@@ -1,11 +1,9 @@
 import threading
-import time
 
 import cv2
 import pytesseract
-from PIL import Image, ImageEnhance
 
-from screenshot_capturer import ScreenshotCapturer
+from Core.screenshot_capturer import ScreenshotCapturer
 
 class CoordinateRecognizer:
     def __init__(self, region=(1827,840, 20, 20), interval=0.3):

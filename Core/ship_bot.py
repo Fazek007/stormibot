@@ -4,16 +4,18 @@ from random import randint
 from time import sleep
 import os
 import sys
-
 import keyboard
 import cv2
 import numpy as np
 import pyautogui
 import time
 
-import DiscordUpdater
-from screenshot_capturer import ScreenshotCapturer
-from coordinate_recognizer import CoordinateRecognizer
+from PyQt6.QtCore import QObject, pyqtSignal
+
+from Core.discord_updater import doUpdateOnDiscord, send_screenshot_async
+from Core.screenshot_capturer import ScreenshotCapturer
+from Core.coordinate_recognizer import CoordinateRecognizer
+from Core.bot_stats import BotStats
 
 SCREENCENTER = (960, 555)
 
@@ -22,31 +24,48 @@ def use_powerups():
     pyautogui.leftClick(700, 700)
     keyboard.press_and_release('7')
     keyboard.press_and_release('7')
-    sleep(1)
+    sleep(2)
     keyboard.press_and_release('8')
     keyboard.press_and_release('8')
-    sleep(1)
+    sleep(2)
     keyboard.press_and_release('9')
     keyboard.press_and_release('9')
 
 
-def get_project_root():
-    if getattr(sys, 'frozen', False):  # running as .exe
-        return os.path.dirname(sys.executable)
-    return os.path.dirname(os.path.abspath(__file__))
+def project_path(relative_path=None):
+    """
+    Returns:
+      - The correct base path for reading bundled files (PyInstaller _MEIPASS)
+      - Or the project folder in normal dev mode.
+    If `relative_path` is given, returns the full path to that file/folder.
+    """
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS  # PyInstaller temp folder
+    else:
+        base_path = os.path.dirname(os.path.abspath(__file__)) + "/../" # !!! This is because the program runs from inside \Core folder and not the project root !!!
 
-PROJECT_ROOT = get_project_root()
-SCREENSHOT_DIR = os.path.join(PROJECT_ROOT, "screenshots")
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)  # ensure folder exists
+    if relative_path:
+        return os.path.join(base_path, relative_path)
+    return base_path
 
-class ShipBot:
+# Example usage for loading an image
+# leave_harbour_button = cv2.imread(project_path("assets/leave_harbour.png"))
+
+# Example usage for writing a folder
+SCREENSHOT_DIR = os.path.join(project_path(), "screenshots")
+os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+
+class ShipBot(QObject):
+    bot_died = pyqtSignal(str)
     def __init__(self, region=(500, 120, 900, 760), confidence_threshold=0.7):
+        super().__init__()
         self.level_image_map = {
             "all"  : ['assets/lvl_aggro.png', 'assets/lvl.png'],
             "10-19": ['assets/lvl1x_aggro.png', 'assets/lvl1x.png'],
             "20-29": ['assets/lvl2x_aggro.png', 'assets/lvl2x.png'],
             "30-39": ['assets/lvl3x_aggro.png', 'assets/lvl3x.png']
         }
+
         self.enemy_targets = []
         self.chest_skin_paths = ['assets/summer_chest1.png', 'assets/summer_chest2.png', 'assets/summer_chest3.png']
         self.movement_target_path = 'assets/movement_target.png'
@@ -100,6 +119,8 @@ class ShipBot:
         self.leave_harbour_button_h, self.leave_harbour_button_w = self.leave_harbour_button.shape[:2]
         self.respawn_button_h, self.respawn_button_w = self.respawn_button.shape[:2]
 
+        self.statistics = BotStats()
+
     def set_attack_levels(self, levels: list[str]):
         self.enemy_targets = []
         for level in levels:
@@ -110,12 +131,15 @@ class ShipBot:
         self.stop_flag = True
         print("The program has been stopped by the user")
 
-    def load_image(self, image_path):
-            """ Load an image and return it, or None if there's an error. """
-            image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-            if image is None:
-                print(f"Error loading image: {image_path}")
-            return image
+    def load_image(self, relative_path):
+        """Load an image from project assets folder. Returns None if not found."""
+        full_path = project_path(relative_path)  # makes it work in exe + dev
+        image = cv2.imread(full_path, cv2.IMREAD_COLOR)
+
+        if image is None:
+            print(f"[ERROR] Could not load image: {full_path}")
+        return image
+
 
     def calculate_distance(self, x, y):
         dx = x - SCREENCENTER[0]
@@ -151,7 +175,7 @@ class ShipBot:
             if max_val >= 0.85:
                 # Calculate the center of the matched area
                 match_x, match_y = max_loc
-                center_x = match_x + 36 # i removed template_W
+                center_x = match_x + 60
                 center_y = match_y + 30
 
                 # Apply the region offset and return the final position
@@ -176,8 +200,6 @@ class ShipBot:
 
         print("Ship not found on the screen.")
         return False  # No ships were found
-
-    #def bm_ship_recognition(self, screenshot, prev_frame=None):
 
     npc_counter : int = 0
     non_npc_counter : int = 0
@@ -362,7 +384,8 @@ class ShipBot:
 
         # Check if the match exceeds the confidence threshold
         if max_val >= 0.85:
-            print("The ship is destroyed.")
+            self.statistics.deaths += 1
+            self.bot_died.emit("Bot has been killed")
             self.clickCenter(self.respawn_button_w, self.respawn_button_h * 2, max_loc)
             sleep(5)
             pyautogui.leftClick(700, 700)
@@ -576,7 +599,7 @@ class ShipBot:
     def run(self):
         self.stop_flag = False
         self.screenshot_capturer.start_capturing()
-        DiscordUpdater.send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
+        send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
         sleep(5)
         """ Main loop of the bot. """
         last_respawn_time = time.time()
@@ -612,7 +635,7 @@ class ShipBot:
                     last_repair_time = current_time
 
                 if current_time - last_screenshot_time >= 1800:
-                    DiscordUpdater.send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
+                    send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
                     last_screenshot_time = current_time
                 if current_time - last_disconnect_check_time >= 600:
                     self.disconnected_recognition()

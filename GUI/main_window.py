@@ -1,26 +1,32 @@
 import sys
 import threading
 
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QPushButton, QComboBox, QListWidget, \
+from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QPushButton, QListWidget, \
     QAbstractItemView, QVBoxLayout, QCheckBox, QLabel
-from PyQt6.QtCore import Qt
-from ship_bot import ShipBot
+from PyQt6.QtCore import Qt, pyqtSignal
+from Core.ship_bot import ShipBot
+from stop_watch import StopwatchWidget
+from death_counter import DeathCounter
 import keyboard
 
 class BotWindow(QMainWindow):
+    stop_signal = pyqtSignal()
     def __init__(self):
         super().__init__()
+        self.stop_signal.connect(self.stop_bot)
         self.setWindowTitle("Stormibot")
-        self.resize(500,400)
-        self._setup_ui()
-
+        self.resize(400,200)
         self.bot = ShipBot()
         self.bot_thread = None  # placeholder for the bot thread
 
+        self._setup_ui()
+
     def _setup_ui(self):
+        #QMainWindow must use a central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
+        #Layouts
         parent_layout = QHBoxLayout()
         left_box_layout = QHBoxLayout()
         right_box_layout = QVBoxLayout()
@@ -28,11 +34,14 @@ class BotWindow(QMainWindow):
 
         #Start button
         self.start_button = QPushButton("Start")
-        self.start_button.setFixedSize(200,200)
+        self.start_button.setFixedSize(100,100)
 
         #Stop button
         self.stop_button = QPushButton("Stop")
-        self.stop_button.setFixedSize(200,200)
+        self.stop_button.setFixedSize(100,100)
+
+        #Stopwatch
+        self.stopwatch = StopwatchWidget()
 
         #Attack all Checkbox
         attack_all_layout = QHBoxLayout()  # Horizontal layout for label + checkbox
@@ -49,16 +58,25 @@ class BotWindow(QMainWindow):
         self.target_level_list.addItems(["10-19", "20-29", "30-39"])
         self.target_level_list.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
+        #Death Counter
+        self.death_counter = DeathCounter()
+
         #Signal connections
         self.stop_button.clicked.connect(self.stop_bot)
         self.start_button.clicked.connect(self.start_bot)
         self.attack_all_checkbox.stateChanged.connect(self.toggle_list)
+        self.bot.bot_died.connect(self.handle_bot_died)
 
+        #Left block
         left_box_layout.addWidget(self.start_button)
         left_box_layout.addWidget(self.stop_button)
 
+        #Right block
+        right_box_layout.addWidget(self.stopwatch, alignment=Qt.AlignmentFlag.AlignTop)
+        right_box_layout.addWidget(self.death_counter, alignment=Qt.AlignmentFlag.AlignTop)
         right_box_layout.addWidget(attack_all_widget, alignment=Qt.AlignmentFlag.AlignBottom) # needs fixing still
         right_box_layout.addWidget(self.target_level_list, alignment=Qt.AlignmentFlag.AlignTop) # needs fixing still
+
 
         parent_layout.addLayout(left_box_layout)
         parent_layout.addLayout(right_box_layout)
@@ -85,12 +103,23 @@ class BotWindow(QMainWindow):
             self.bot_thread.start()
             print("Bot thread started")
 
+        self.bot.statistics.reset()
+        self.update_statistics()
+        self.stopwatch.start_timer()
+
+    def update_statistics(self):
+        self.death_counter.update_death_counter(self.bot.statistics.deaths)
+
     def stop_bot(self):
         self.bot.stop_program()
+        self.stopwatch.stop_timer()
+
+    def handle_bot_died(self):
+        self.update_statistics()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = BotWindow()
-    keyboard.add_hotkey('q', window.bot.stop_program)
+    keyboard.add_hotkey('q', lambda: window.stop_signal.emit())
     window.show()
     sys.exit(app.exec())
