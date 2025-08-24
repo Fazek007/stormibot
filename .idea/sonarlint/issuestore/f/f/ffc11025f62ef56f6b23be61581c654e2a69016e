@@ -1,164 +1,0 @@
-
-spython:S1192"ZDefine a constant instead of duplicating this literal "Invalid command at index " 4 times.(Ã‚é
-bpython:S1192°	"IDefine a constant instead of duplicating this literal "%s,%s,%s" 3 times.(Œçšß
-xpython:S1192Ÿ"_Define a constant instead of duplicating this literal "Invalid command at index %s:%s" 4 times.(³ÔºÓ
-_python:S1192"FDefine a constant instead of duplicating this literal "%s,%s" 6 times.( º÷„
-Lpython:S1135"4Complete the task associated to this "TODO" comment.(²Õˆ
-wpython:S1542i"_Rename function "_couldNotImportPyTweening" to match the regular expression ^[a-z_][a-z0-9_]*$.(¡ó¸
-upython:S1542–"]Rename function "_couldNotImportPyMsgBox" to match the regular expression ^[a-z_][a-z0-9_]*$.(Š„É	
-xpython:S117¢"[Rename this parameter "wrappedFunction" to match the regular expression ^[_a-z][a-z0-9_]*$.(¡Æ†úÿÿÿÿ
-ˆpython:S1542¢"jRename function "raisePyAutoGUIImageNotFoundException" to match the regular expression ^[a-z_][a-z0-9_]*$.(¡Æ†úÿÿÿÿ
-hpython:S1542¿"ORename function "locateAll" to match the regular expression ^[a-z_][a-z0-9_]*$.(¸¸Ö—
-opython:S1542Å"WRename function "locateAllOnScreen" to match the regular expression ^[a-z_][a-z0-9_]*$.(‘“‘N
-spython:S1542Ë"ZRename function "locateCenterOnScreen" to match the regular expression ^[a-z_][a-z0-9_]*$.(åóÇè
-mpython:S1542Ñ"TRename function "locateOnScreen" to match the regular expression ^[a-z_][a-z0-9_]*$.(²Ë
-rpython:S1542×"TRename function "locateOnWindow" to match the regular expression ^[a-z_][a-z0-9_]*$.(ã‚úÊıÿÿÿÿ
-wpython:S1542ß"^Rename function "_couldNotImportPyScreeze" to match the regular expression ^[a-z_][a-z0-9_]*$.(¡£Àä
-7python:S125é"Remove this commented out code.(ºŸÈç
-mpython:S1542ø"ORename function "mouseInfo" to match the regular expression ^[a-z_][a-z0-9_]*$.(›ëíøÿÿÿÿ
-mpython:S1542"ORename function "mouseInfo" to match the regular expression ^[a-z_][a-z0-9_]*$.(›ëíøÿÿÿÿ
-xpython:S1542‹"_Rename function "useImageNotFoundException" to match the regular expression ^[a-z_][a-z0-9_]*$.(«ß¹ÿ
-Mpython:S1135•"4Complete the task associated to this "TODO" comment.(ÿÌşå
-ypython:S1542©"`Rename function "_couldNotImportPyGetWindow" to match the regular expression ^[a-z_][a-z0-9_]*$.(‚¹èó
-Mpython:S1135ˆ"4Complete the task associated to this "TODO" comment.(Õ¤
-tpython:S1542"VRename function "isShiftCharacter" to match the regular expression ^[a-z_][a-z0-9_]*$.(ò†üÿÿÿÿ
-6python:S125™"Remove this commented out code.(¤µX
-Rpython:S1135¤"4Complete the task associated to this "TODO" comment.(ÎÔ™×úÿÿÿÿ
-Rpython:S1135®"4Complete the task associated to this "TODO" comment.(¤ÌúÄıÿÿÿÿ
-Mpython:S1135¶"4Complete the task associated to this "TODO" comment.(§å¾©
-Mpython:S1135Ã"4Complete the task associated to this "TODO" comment.(íÖ’™
-spython:S117É"[Rename this parameter "wrappedFunction" to match the regular expression ^[_a-z][a-z0-9_]*$.(ßË–µ
-vpython:S1542É"]Rename function "_genericPyAutoGUIChecks" to match the regular expression ^[a-z_][a-z0-9_]*$.(ßË–µ
-qpython:S117Ò"ZRename this local variable "returnVal" to match the regular expression ^[_a-z][a-z0-9_]*$.(ì‘j
-rpython:S1542İ"TRename function "getPointOnLine" to match the regular expression ^[a-z_][a-z0-9_]*$.(“©Ã“ûÿÿÿÿ
-kpython:S1542÷"RRename function "_handlePause" to match the regular expression ^[a-z_][a-z0-9_]*$.(õÁÔ
-qpython:S117‚"TRename this parameter "firstArg" to match the regular expression ^[_a-z][a-z0-9_]*$.(¹¡–Ôıÿÿÿÿ
-rpython:S117‚"URename this parameter "secondArg" to match the regular expression ^[_a-z][a-z0-9_]*$.(¹¡–Ôıÿÿÿÿ
-tpython:S1542‚"VRename function "_normalizeXYArgs" to match the regular expression ^[a-z_][a-z0-9_]*$.(¹¡–Ôıÿÿÿÿ
-rpython:S3776‚"TRefactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.(¹¡–Ôıÿÿÿÿ
-lpython:S117Â"TRename this parameter "funcArgs" to match the regular expression ^[_a-z][a-z0-9_]*$.(ó¤èÑ
-lpython:S117Â"TRename this parameter "funcName" to match the regular expression ^[_a-z][a-z0-9_]*$.(ó¤èÑ
-qpython:S117Â"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(ó¤èÑ
-mpython:S1542Â"TRename function "_logScreenshot" to match the regular expression ^[a-z_][a-z0-9_]*$.(ó¤èÑ
-gpython:S1542•"NRename function "onScreen" to match the regular expression ^[a-z_][a-z0-9_]*$.(é÷¼µ
-opython:S1542¹"VRename function "_normalizeButton" to match the regular expression ^[a-z_][a-z0-9_]*$.(¡¼·œ
-mpython:S3776¹"TRefactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.(¡¼·œ
-Mpython:S1135Î"4Complete the task associated to this "TODO" comment.(‚îõ‰
-Mpython:S1135Ï"4Complete the task associated to this "TODO" comment.(²ÚÍû
-Rpython:S1135à"4Complete the task associated to this "TODO" comment.(«¤’Ğşÿÿÿÿ
-qpython:S117ó"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(Óï’
-hpython:S1542ó"ORename function "mouseDown" to match the regular expression ^[a-z_][a-z0-9_]*$.(Óï’
-qpython:S117”"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(˜•Â–
-fpython:S1542”"MRename function "mouseUp" to match the regular expression ^[a-z_][a-z0-9_]*$.(˜•Â–
-vpython:S117¶"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(î¢£ëûÿÿÿÿ
-Dpython:S1481á"+Replace the unused loop index "i" with "_".(œíÿ…
-Rpython:S1135×"4Complete the task associated to this "TODO" comment.(Ö‚Îùÿÿÿÿ
-vpython:S117ï"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(íùÅ›ÿÿÿÿÿ
-mpython:S1542ï"ORename function "leftClick" to match the regular expression ^[a-z_][a-z0-9_]*$.(íùÅ›ÿÿÿÿÿ
-Mpython:S1135ˆ"4Complete the task associated to this "TODO" comment.(ó˜•
-qpython:S117"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(§öíÕ
-ipython:S1542"PRename function "rightClick" to match the regular expression ^[a-z_][a-z0-9_]*$.(§öíÕ
-qpython:S117©"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(«î¾
-jpython:S1542©"QRename function "middleClick" to match the regular expression ^[a-z_][a-z0-9_]*$.(«î¾
-vpython:S117Â"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(Ëñ‰™şÿÿÿÿ
-opython:S1542Â"QRename function "doubleClick" to match the regular expression ^[a-z_][a-z0-9_]*$.(Ëñ‰™şÿÿÿÿ
-qpython:S117í"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(æßïÿ
-jpython:S1542í"QRename function "tripleClick" to match the regular expression ^[a-z_][a-z0-9_]*$.(æßïÿ
-vpython:S117—	"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÀÀÊüıÿÿÿÿ
-vpython:S117µ	"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(¢­ï‚ıÿÿÿÿ
-qpython:S117Ñ	"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(èÓ¼Õ
-qpython:S117í	"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(˜³‰Ä
-epython:S1542í	"LRename function "moveTo" to match the regular expression ^[a-z_][a-z0-9_]*$.(˜³‰Ä
-ppython:S117Œ
-"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(âŸ€;
-jpython:S117Œ
-"SRename this parameter "xOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(âŸ€;
-jpython:S117Œ
-"SRename this parameter "yOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(âŸ€;
-epython:S1542Œ
-"MRename function "moveRel" to match the regular expression ^[a-z_][a-z0-9_]*$.(âŸ€;
-vpython:S117®
-"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(ê¢²—øÿÿÿÿ
-tpython:S117®
-"WRename this parameter "mouseDownUp" to match the regular expression ^[_a-z][a-z0-9_]*$.(ê¢²—øÿÿÿÿ
-jpython:S1542­
-"LRename function "dragTo" to match the regular expression ^[a-z_][a-z0-9_]*$.(ìôØ“üÿÿÿÿ
-vpython:S117×
-"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(ªï²ùşÿÿÿÿ
-tpython:S117×
-"WRename this parameter "mouseDownUp" to match the regular expression ^[_a-z][a-z0-9_]*$.(ªï²ùşÿÿÿÿ
-ppython:S117×
-"SRename this parameter "xOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(ªï²ùşÿÿÿÿ
-ppython:S117×
-"SRename this parameter "yOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(ªï²ùşÿÿÿÿ
-fpython:S1542Ö
-"MRename function "dragRel" to match the regular expression ^[a-z_][a-z0-9_]*$.(Çà’“
-npython:S117‰"VRename this parameter "moveOrDrag" to match the regular expression ^[_a-z][a-z0-9_]*$.(€Ë“
-opython:S117Ô"WRename this local variable "tweenX" to match the regular expression ^[_a-z][a-z0-9_]*$.(ª­‡Ñ
-opython:S117Ô"WRename this local variable "tweenY" to match the regular expression ^[_a-z][a-z0-9_]*$.(ª­‡Ñ
-kpython:S117‰"SRename this parameter "xOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(€Ë“
-kpython:S117‰"SRename this parameter "yOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(€Ë“
-mpython:S1542‰"TRename function "_mouseMoveDrag" to match the regular expression ^[a-z_][a-z0-9_]*$.(€Ë“
-mpython:S3776‰"TRefactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.(€Ë“
-ipython:S1542ñ"PRename function "isValidKey" to match the regular expression ^[a-z_][a-z0-9_]*$.(ë«òà
-vpython:S117†"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(¿ö¾¢ÿÿÿÿÿ
-kpython:S1542†"MRename function "keyDown" to match the regular expression ^[a-z_][a-z0-9_]*$.(¿ö¾¢ÿÿÿÿÿ
-vpython:S117œ"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(¬ß¡øÿÿÿÿ
-ipython:S1542œ"KRename function "keyUp" to match the regular expression ^[a-z_][a-z0-9_]*$.(¬ß¡øÿÿÿÿ
-vpython:S117®"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(‰Ñ¸Îøÿÿÿÿ
-wpython:S117Â"ZRename this local variable "lowerKeys" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÍÊÖ˜øÿÿÿÿ
-Ipython:S1481Ë"+Replace the unused loop index "i" with "_".(ŒéÌœüÿÿÿÿ
-Cpython:S6660½"%Use the `isinstance()` function here.(ËÓÇışÿÿÿÿ
-vpython:S117Õ"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÿ·ü¡úÿÿÿÿ
-wpython:S117æ"ZRename this local variable "lowerKeys" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÍÊÖ˜øÿÿÿÿ
-Cpython:S6660á"%Use the `isinstance()` function here.(ËÓÇışÿÿÿÿ
-qpython:S117ú"YRename this parameter "logScreenshot" to match the regular expression ^[_a-z][a-z0-9_]*$.(ã°–¬
-Mpython:S1135"4Complete the task associated to this "TODO" comment.(ÑşÙ¶
-Mpython:S1135®"4Complete the task associated to this "TODO" comment.(ô°²Ä
-qpython:S1542Ä"SRename function "failSafeCheck" to match the regular expression ^[a-z_][a-z0-9_]*$.(Ì¢Ÿáıÿÿÿÿ
-xpython:S117İ"[Rename this local variable "pixelColor" to match the regular expression ^[_a-z][a-z0-9_]*$.(ˆ áıúÿÿÿÿ
-ypython:S117Ú"\Rename this local variable "positionStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(Ú§“²şÿÿÿÿ
-ypython:S117Ï"\Rename this local variable "runningIDLE" to match the regular expression ^[_a-z][a-z0-9_]*$.(æ§…üıÿÿÿÿ
-ppython:S117Ë"SRename this parameter "xOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(Å‹ç©ûÿÿÿÿ
-ppython:S117Ë"SRename this parameter "yOffset" to match the regular expression ^[_a-z][a-z0-9_]*$.(Å‹ç©ûÿÿÿÿ
-xpython:S1542Ë"ZRename function "displayMousePosition" to match the regular expression ^[a-z_][a-z0-9_]*$.(Å‹ç©ûÿÿÿÿ
-Mpython:S1481ù"/Replace the unused local variable "x" with "_".(‹´ÚÀùÿÿÿÿ
-Mpython:S1481ù"/Replace the unused local variable "y" with "_".(‹´ÚÀùÿÿÿÿ
-Rpython:S1135ô"4Complete the task associated to this "TODO" comment.(è¿Ç‚øÿÿÿÿ
-[python:S112ö">Replace this generic exception class with a more specific one.(Ñõ”áúÿÿÿÿ
-spython:S117˜"VRename this parameter "commandStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(Æ½ÜĞùÿÿÿÿ
-spython:S1542˜"URename function "_getNumberToken" to match the regular expression ^[a-z_][a-z0-9_]*$.(Æ½ÜĞùÿÿÿÿ
-Npython:S6035£"0Replace this alternation with a character class.(—ëƒ®ÿÿÿÿÿ
-npython:S117«"VRename this parameter "commandStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(ïëÎÚ
-tpython:S1542«"[Rename function "_getQuotedStringToken" to match the regular expression ^[a-z_][a-z0-9_]*$.(ïëÎÚ
-mpython:S117¼"VRename this parameter "commandStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(åËËy
-xpython:S117Ï"`Rename this local variable "openParensCount" to match the regular expression ^[_a-z][a-z0-9_]*$.(Û¢áÉ
-wpython:S1542¼"_Rename function "_getParensCommandStrToken" to match the regular expression ^[a-z_][a-z0-9_]*$.(åËËy
-npython:S117á"VRename this parameter "commandStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(½î£
-mpython:S1542á"TRename function "_getCommaToken" to match the regular expression ^[a-z_][a-z0-9_]*$.(½î£
-tpython:S117ø"\Rename this local variable "commandList" to match the regular expression ^[_a-z][a-z0-9_]*$.(óæ¨·
-|python:S117õ"_Rename this local variable "commandPattern" to match the regular expression ^[_a-z][a-z0-9_]*$.(°À¬ùÿÿÿÿ
-spython:S117ñ"VRename this parameter "commandStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(Ú ×¢ûÿÿÿÿ
-qpython:S117"YRename this local variable "indexNum" to match the regular expression ^[_a-z][a-z0-9_]*$.(Ã‚é
-wpython:S117›"ZRename this local variable "indexPart" to match the regular expression ^[_a-z][a-z0-9_]*$.(Çîä”ÿÿÿÿÿ
-python:S117„"bRename this local variable "individualCommand" to match the regular expression ^[_a-z][a-z0-9_]*$.(©ì™õıÿÿÿÿ
-ypython:S117"\Rename this local variable "newIndexNum" to match the regular expression ^[_a-z][a-z0-9_]*$.(ªôÀÚüÿÿÿÿ
-{python:S117Õ"^Rename this local variable "numberOfLoops" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÓÆØ˜ùÿÿÿÿ
-zpython:S117Ä"]Rename this local variable "quotedString" to match the regular expression ^[_a-z][a-z0-9_]*$.(éĞ²Óûÿÿÿÿ
-{python:S117Ø"^Rename this local variable "subCommandStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÛßÜışÿÿÿÿ
-wpython:S1542ñ"YRename function "_tokenizeCommandStr" to match the regular expression ^[a-z_][a-z0-9_]*$.(Ú ×¢ûÿÿÿÿ
-Qpython:S1481›"3Replace the unused local variable "colon" with "_".(Çîä”ÿÿÿÿÿ
-rpython:S3776ñ"TRefactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.(Ú ×¢ûÿÿÿÿ
-Rpython:S1135³"4Complete the task associated to this "TODO" comment.(›¨ã¾üÿÿÿÿ
-qpython:S117ï"TRename this parameter "_ssCount" to match the regular expression ^[_a-z][a-z0-9_]*$.(ñÎ¸”şÿÿÿÿ
-tpython:S117ï"WRename this parameter "commandList" to match the regular expression ^[_a-z][a-z0-9_]*$.(ñÎ¸”şÿÿÿÿ
-spython:S1542ï"URename function "_runCommandList" to match the regular expression ^[a-z_][a-z0-9_]*$.(ñÎ¸”şÿÿÿÿ
-Ipython:S1481£"+Replace the unused loop index "j" with "_".(—Û¢¶ùÿÿÿÿ
-rpython:S3776ï"TRefactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.(ñÎ¸”şÿÿÿÿ
-lpython:S117©"TRename this parameter "_ssCount" to match the regular expression ^[_a-z][a-z0-9_]*$.(Œƒ¶õ
-ypython:S117Ş"\Rename this local variable "commandList" to match the regular expression ^[_a-z][a-z0-9_]*$.(ôéùÿÿÿÿ
-npython:S117©"VRename this parameter "commandStr" to match the regular expression ^[_a-z][a-z0-9_]*$.(Œƒ¶õ
-{python:S117á"^Rename this local variable "originalPAUSE" to match the regular expression ^[_a-z][a-z0-9_]*$.(ôÿ £øÿÿÿÿ
-mpython:S117æ"URename this parameter "dontPrint" to match the regular expression ^[_a-z][a-z0-9_]*$.(¡¤Î
-hpython:S1542æ"ORename function "printInfo" to match the regular expression ^[a-z_][a-z0-9_]*$.(¡¤Î
-kpython:S1542õ"MRename function "getInfo" to match the regular expression ^[a-z_][a-z0-9_]*$.(¢˜Šãÿÿÿÿÿ
