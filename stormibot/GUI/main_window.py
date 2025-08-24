@@ -1,13 +1,12 @@
-import sys
 import threading
 
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QPushButton, QListWidget, \
+from PyQt6.QtWidgets import QWidget, QMainWindow, QHBoxLayout, QPushButton, QListWidget, \
     QAbstractItemView, QVBoxLayout, QCheckBox, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal, QSettings
-from Core.ship_bot import ShipBot
-from stop_watch import StopwatchWidget
-from death_counter import DeathCounter
-import keyboard
+from stormibot.GUI.death_counter import DeathCounter
+from stormibot.core.ship_bot import ShipBot
+from stormibot.GUI.stop_watch import StopwatchWidget
+
 
 class BotWindow(QMainWindow):
     stop_signal = pyqtSignal()
@@ -139,12 +138,5 @@ class BotWindow(QMainWindow):
 
     def closeEvent(self, event):
         self.save_settings()
+        self.bot.stop_program()
         event.accept()
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = BotWindow()
-    keyboard.add_hotkey('q', lambda: window.stop_signal.emit())
-    window.show()
-    sys.exit(app.exec())

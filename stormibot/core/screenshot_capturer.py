@@ -2,6 +2,7 @@ import threading
 import pyautogui
 import cv2
 import numpy as np
+import time
 
 class ScreenshotCapturer:
     def __init__(self, region=None):
@@ -16,14 +17,28 @@ class ScreenshotCapturer:
         self.keep_capturing = False
         self.screenshot_thread = None
         self.screenshot_lock = threading.Lock()
+        self.new_screenshot_event = threading.Event()
 
-    def _capture_screenshots(self):
+    def _capture_screenshots(self, interval=0.25):
         """Continuously capture screenshots from the specified region."""
         while self.keep_capturing:
+            start_time = time.perf_counter()
+
             screenshot = pyautogui.screenshot(region=self.region)
             screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+
             with self.screenshot_lock:
                 self.latest_screenshot = screenshot
+                self.new_screenshot_event.set()
+
+            end_time = time.perf_counter()
+            elapsed = end_time - start_time
+            #print(f"[DEBUG] One capture iteration took {elapsed:.4f} seconds")
+
+            # Sleep to enforce interval (minus time already spent capturing)
+            time_to_sleep = interval - elapsed
+            if time_to_sleep > 0:
+                time.sleep(time_to_sleep)
 
     def capture_screenshot_specific(self, min_x, min_y, width, height):
         region = (min_x, min_y, width, height)  # Define the region as a tuple

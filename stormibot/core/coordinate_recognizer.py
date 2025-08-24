@@ -3,7 +3,7 @@ import threading
 import cv2
 import pytesseract
 
-from Core.screenshot_capturer import ScreenshotCapturer
+from stormibot.core.screenshot_capturer import ScreenshotCapturer
 
 class CoordinateRecognizer:
     def __init__(self, region=(1827,840, 20, 20), interval=0.3):

@@ -9,13 +9,15 @@ import cv2
 import numpy as np
 import pyautogui
 import time
-
+import traceback
+from pathlib import Path
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from Core.discord_updater import doUpdateOnDiscord, send_screenshot_async
-from Core.screenshot_capturer import ScreenshotCapturer
-from Core.coordinate_recognizer import CoordinateRecognizer
-from Core.bot_stats import BotStats
+from stormibot.core.discord_updater import doUpdateOnDiscord, send_screenshot_async
+from stormibot.core.scheduled_task import ScheduledTask
+from stormibot.core.screenshot_capturer import ScreenshotCapturer
+from stormibot.core.coordinate_recognizer import CoordinateRecognizer
+from stormibot.core.bot_stats import BotStats
 
 SCREENCENTER = (960, 555)
 
@@ -32,54 +34,49 @@ def use_powerups():
     keyboard.press_and_release('9')
 
 
-def project_path(relative_path=None):
-    """
-    Returns:
-      - The correct base path for reading bundled files (PyInstaller _MEIPASS)
-      - Or the project folder in normal dev mode.
-    If `relative_path` is given, returns the full path to that file/folder.
-    """
-    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-        base_path = sys._MEIPASS  # PyInstaller temp folder
-    else:
-        base_path = os.path.dirname(os.path.abspath(__file__)) + "/../" # !!! This is because the program runs from inside \Core folder and not the project root !!!
-
-    if relative_path:
-        return os.path.join(base_path, relative_path)
-    return base_path
-
-# Example usage for loading an image
-# leave_harbour_button = cv2.imread(project_path("assets/leave_harbour.png"))
-
-# Example usage for writing a folder
-SCREENSHOT_DIR = os.path.join(project_path(), "screenshots")
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+def project_path(relative_path):
+    """ Get absolute path to resource, works in dev and PyInstaller """
+    try:
+        # PyInstaller stores data files in _MEIPASS
+        base_path = Path(sys._MEIPASS)
+    except AttributeError:
+        # Dev: relative to current file
+        base_path = Path(__file__).resolve().parent.parent
+    return str(base_path / relative_path)
 
 class ShipBot(QObject):
     bot_died = pyqtSignal(str)
+    ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+
     def __init__(self, region=(500, 120, 900, 760), confidence_threshold=0.7):
         super().__init__()
         self.level_image_map = {
-            "all"  : ['assets/lvl_aggro.png', 'assets/lvl.png'],
-            "10-19": ['assets/lvl1x_aggro.png', 'assets/lvl1x.png'],
-            "20-29": ['assets/lvl2x_aggro.png', 'assets/lvl2x.png'],
-            "30-39": ['assets/lvl3x_aggro.png', 'assets/lvl3x.png']
+            "all"  : [self.ASSETS_DIR / 'full_ship.png'],  # experimental
+            "10-19": [self.ASSETS_DIR / 'lvl1x_aggro.png', self.ASSETS_DIR / 'lvl1x.png'],
+            "20-29": [self.ASSETS_DIR / 'lvl2x_aggro.png', self.ASSETS_DIR / 'lvl2x.png'],
+            "30-39": [self.ASSETS_DIR / 'lvl3x_aggro.png', self.ASSETS_DIR / 'lvl3x.png']
         }
 
+        self.tasks = []
         self.enemy_targets = []
-        self.chest_skin_paths = ['assets/summer_chest1.png', 'assets/summer_chest2.png', 'assets/summer_chest3.png']
-        self.movement_target_path = 'assets/movement_target.png'
-        self.leave_harbour_path = 'assets/set_sail.png'
-        self.respawn_path = 'assets/respawn.png'
-        self.bm_sea_path = 'assets/sea_40x40.png'
-        self.attack_symbol_path = 'assets/attack_symbol.png'
-        self.gold_repair_symbol_path = 'assets/gold_rep_snow.png'
-        self.green_hp_path = 'assets/green_hp.png'
-        self.burning_player_ship_path = 'assets/ship_burning_uniform.png'
-        self.npc_icon_path = 'assets/npc_icon.png'
-        self.reconnect_button_path = 'assets/reconnect_button.png'
-        self.x_button_path = 'assets/x_button.png'
-        self.daily_login_path = 'assets/daily_login_bonus_text.png'
+
+        self.chest_skin_paths = [
+            self.ASSETS_DIR / "summer_chest1.png",
+            self.ASSETS_DIR / "summer_chest2.png",
+            self.ASSETS_DIR / "summer_chest3.png"
+        ]
+        self.movement_target_path = self.ASSETS_DIR / "movement_target.png"
+        self.leave_harbour_path = self.ASSETS_DIR / "set_sail.png"
+        self.respawn_path = self.ASSETS_DIR / "respawn.png"
+        self.bm_sea_path = self.ASSETS_DIR / "sea_40x40.png"
+        self.attack_symbol_path = self.ASSETS_DIR / "attack_symbol.png"
+        self.gold_repair_symbol_path = self.ASSETS_DIR / "gold_rep_snow.png"
+        self.green_hp_path = self.ASSETS_DIR / "green_hp.png"
+        self.burning_player_ship_path = self.ASSETS_DIR / "ship_burning_uniform.png"
+        self.npc_icon_path = self.ASSETS_DIR / "npc_icon.png"
+        self.reconnect_button_path = self.ASSETS_DIR / "reconnect_button.png"
+        self.x_button_path = self.ASSETS_DIR / "x_button.png"
+        self.daily_login_path = self.ASSETS_DIR / "daily_login_bonus_text.png"
 
         self.isMoving = False
         self.isAttacking = False
@@ -118,6 +115,7 @@ class ShipBot(QObject):
         # Template dimensions
         self.leave_harbour_button_h, self.leave_harbour_button_w = self.leave_harbour_button.shape[:2]
         self.respawn_button_h, self.respawn_button_w = self.respawn_button.shape[:2]
+        self.chest_targets_h, self.chest_targets_w = self.chest_targets[0].shape[:2]
 
         self.statistics = BotStats()
 
@@ -146,77 +144,50 @@ class ShipBot(QObject):
         dy = y - SCREENCENTER[1]
         return (dx**2 + dy**2)**0.5
 
-    def ship_to_enemy_halfway_point(self, enemy_coords):
-
-        ship_x, ship_y = SCREENCENTER
-        enemy_x, enemy_y = enemy_coords
-
-        halfway_x = (ship_x + enemy_x) / 2
-        halfway_y = (ship_y + enemy_y) / 2
-
-        return halfway_x, halfway_y
-
     def ship_recognition_v2(self, screenshot):
-        if self.isAttacking:  # Skip ship recognition if the ship is already moving
-            #print("The ship is currently attacking. Skipping ship recognition.")
+        if self.isAttacking:
             return False
 
         if self.isRecovering:
             print("The ship is currently recovering. Skipping ship recognition.")
             return False
-
+        gray_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
+        self.save_screenshot(gray_screenshot, "temp_scr")
         for target in self.enemy_targets:
+            gray_target = cv2.cvtColor(target, cv2.COLOR_BGR2GRAY)
 
-            # Perform template matching using the images
-            result = cv2.matchTemplate(screenshot, target, cv2.TM_CCOEFF_NORMED)
+            # Timer for template matching
+            result = cv2.matchTemplate(gray_screenshot, gray_target, cv2.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
-            # Check if the match exceeds the confidence threshold
-            if max_val >= 0.85:
-                # Calculate the center of the matched area
+            if max_val >= 0.90:
                 match_x, match_y = max_loc
                 center_x = match_x + 60
                 center_y = match_y + 30
-
-                # Apply the region offset and return the final position
                 final_x = self.region[0] + center_x
                 final_y = self.region[1] + center_y
-                #print(f"Found ship at: ({final_x}, {final_y})")
 
                 pyautogui.click(final_x, final_y)
-
-                npc_found = self.npc_recognition()
-
-                if npc_found:
+                if self.npc_recognition():
                     keyboard.press('f')
+                    self.isAttacking = True
+                    self.attack_start_time = time.time()
 
-                # TODO distance based actions
-                if not self.isMoving:
-                    distance = self.calculate_distance(final_x, final_y)
-                    if distance >= 300:
-                        final_x, final_y = self.ship_to_enemy_halfway_point((final_x, final_y))
-                        pyautogui.click(final_x, final_y)
-                return True  # Recognition and action were successful
 
         print("Ship not found on the screen.")
-        return False  # No ships were found
+        return False
 
-    npc_counter : int = 0
-    non_npc_counter : int = 0
+
+
 
     def npc_recognition(self):
         screenshot = self.screenshot_capturer.capture_screenshot_specific(280, 60, 50, 50)
-        self.save_screenshot(screenshot, "temp")
         result = cv2.matchTemplate(screenshot, self.npc_icon, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
         if max_val >= 0.92:
-            self.npc_counter += 1
-            print("This is an npc:", self.npc_counter)
             return True
         else:
-            self.non_npc_counter += 1
-            print("This is not an npc:", self.non_npc_counter)
             return False
 
     def disconnected_recognition(self):
@@ -282,7 +253,6 @@ class ShipBot(QObject):
             print("Hit points are low")
 
     def chest_recognition(self, screenshot):
-        #TODO movement recogniton type of shit
         if self.isRecovering or self.isMovingForChest:
             #print("The ship is currently moving. Skipping chest recognition.")
             return False
@@ -295,8 +265,8 @@ class ShipBot(QObject):
             if max_val >= self.confidence_threshold:
                 # Calculate the center of the matched area
                 match_x, match_y = max_loc
-                center_x = match_x
-                center_y = match_y # i removed template_W
+                center_x = match_x + self.chest_targets_w / 2
+                center_y = match_y + self.chest_targets_h / 2
 
                 # Apply the region offset and return the final position
                 final_x = self.region[0] + center_x
@@ -321,7 +291,7 @@ class ShipBot(QObject):
             self.isMovingForChest = True
             return True
         else:
-            sleep(0.3) # If the ships front covers the target buoy it immediately starts doing something else, so this lets it get to the chest.
+            #sleep(0.3) # If the ships front covers the target buoy it immediately starts doing something else, so this lets it get to the chest.
             print("The ship is stationary.")
             self.isMoving = False  # Reset the movement state
             self.isMovingForChest = False
@@ -596,59 +566,47 @@ class ShipBot(QObject):
         pyautogui.hotkey('ctrl', key)
         print(f"Pressed Ctrl + {key}")
 
+    def setup_scheduled_tasks(self):
+        self.tasks = [
+            ScheduledTask(lambda: randint(30, 45), lambda: self.respawn(self.screenshot_capturer.get_latest_screenshot())),
+            ScheduledTask(lambda: randint(40, 50), lambda: self.inHarbour(self.screenshot_capturer.get_latest_screenshot())),
+            ScheduledTask(lambda: randint(5, 8), self.repair),
+            ScheduledTask(lambda: 1800, lambda: send_screenshot_async(
+                self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015)
+            ), immediate=True),
+            ScheduledTask(lambda: 600, self.disconnected_recognition),
+            ScheduledTask(lambda: 500, self.x_recognition),
+        ]
     def run(self):
         self.stop_flag = False
         self.screenshot_capturer.start_capturing()
-        send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
+        self.setup_scheduled_tasks()
         sleep(5)
-        """ Main loop of the bot. """
-        last_respawn_time = time.time()
-        last_harbour_time = time.time()
-        last_repair_time = time.time()
-        last_screenshot_time = time.time()
-        last_disconnect_check_time = time.time()
-        last_window_closed_time = time.time()
 
+        """ Main loop of the bot. """
         try:
             while not self.stop_flag:
-                self.movement_recognition(self.screenshot_capturer.get_latest_screenshot())
+                self.screenshot_capturer.new_screenshot_event.clear() # setting event to false
+                self.screenshot_capturer.new_screenshot_event.wait(10.0) # setting "gate", wont start before a very new screenshot is taken
+
+                frame = self.screenshot_capturer.get_latest_screenshot()
+                self.movement_recognition(frame)
                 self.attack_recognition()
+                self.chest_recognition(frame)
 
-                self.chest_recognition(self.screenshot_capturer.get_latest_screenshot())
+                self.screenshot_capturer.new_screenshot_event.clear() # setting event to false
+                self.screenshot_capturer.new_screenshot_event.wait(10.0) # setting "gate", wont start before a very new screenshot is taken
+
                 self.ship_recognition_v2(self.screenshot_capturer.get_latest_screenshot())
-
                 self.random_movement()
-                # Periodic tasks
+
+                # --- Periodic tasks ---
                 current_time = time.time()
-
-                if current_time - last_respawn_time >= randint(30, 45):
-                    last_respawn_time = current_time
-                    if self.respawn(self.screenshot_capturer.get_latest_screenshot()):
-                        last_harbour_time = current_time
-
-                if current_time - last_harbour_time >= randint(40, 50):
-                    self.inHarbour(self.screenshot_capturer.get_latest_screenshot())
-                    last_harbour_time = current_time
-
-                if current_time - last_repair_time >= randint(3,6):
-                    self.repair()
-                    last_repair_time = current_time
-
-                if current_time - last_screenshot_time >= 1800:
-                    send_screenshot_async(self.screenshot_capturer.capture_screenshot_specific(0, 65, 1920, 1015))
-                    last_screenshot_time = current_time
-                if current_time - last_disconnect_check_time >= 600:
-                    self.disconnected_recognition()
-                    last_disconnect_check_time = current_time
-
-                if current_time - last_window_closed_time >= 500:
-                    self.x_recognition()
-                    last_window_closed_time = current_time
-
-
-
+                for task in self.tasks:
+                    task.maybe_run(current_time)
 
         except Exception as e:
             print(f"An error occurred: {e}")
+            traceback.print_exc()
         finally:
             self.screenshot_capturer.stop_capturing()
