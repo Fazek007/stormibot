@@ -51,7 +51,7 @@ class ShipBot(QObject):
     def __init__(self, region=(500, 120, 900, 760), confidence_threshold=0.7):
         super().__init__()
         self.level_image_map = {
-            "all"  : [self.ASSETS_DIR / 'full_ship.png'],  # experimental
+            "all"  : [self.ASSETS_DIR / 'lvl_aggro.png', self.ASSETS_DIR / 'lvl.png'],  # experimental
             "10-19": [self.ASSETS_DIR / 'lvl1x_aggro.png', self.ASSETS_DIR / 'lvl1x.png'],
             "20-29": [self.ASSETS_DIR / 'lvl2x_aggro.png', self.ASSETS_DIR / 'lvl2x.png'],
             "30-39": [self.ASSETS_DIR / 'lvl3x_aggro.png', self.ASSETS_DIR / 'lvl3x.png']
@@ -61,9 +61,9 @@ class ShipBot(QObject):
         self.enemy_targets = []
 
         self.chest_skin_paths = [
-            self.ASSETS_DIR / "summer_chest1.png",
-            self.ASSETS_DIR / "summer_chest2.png",
-            self.ASSETS_DIR / "summer_chest3.png"
+            self.ASSETS_DIR / "winterchest1.png",
+            self.ASSETS_DIR / "winterchest2.png",
+            self.ASSETS_DIR / "winterchest3.png"
         ]
         self.movement_target_path = self.ASSETS_DIR / "movement_target.png"
         self.leave_harbour_path = self.ASSETS_DIR / "set_sail.png"
@@ -537,17 +537,17 @@ class ShipBot(QObject):
         try:
             while True:  # Run the loop indefinitely
                 # 1. item
-                pyautogui.click(420, 340)
+                #pyautogui.click(420, 340)
                 # 2. item
-                #sleep(random.uniform(0,2))
-                #pyautogui.click(420, 390)
+                sleep(random.uniform(0,2))
+                pyautogui.click(420, 390)
                 # 3. item
                 #sleep(random.uniform(0,0.2))
                 #pyautogui.click(420, 440)
                 #print("Clicked at (420, 340)")
 
                 pyautogui.click(950, 585)
-                wait_time = random.uniform(0.1, 3)
+                wait_time = random.uniform(5, 10)
                 print(f"Waiting for {wait_time:.2f} seconds...")
                 time.sleep(wait_time)
                 if keyboard.is_pressed('q'):
@@ -586,6 +586,7 @@ class ShipBot(QObject):
         """ Main loop of the bot. """
         try:
             while not self.stop_flag:
+                sleep(0.3)
                 self.screenshot_capturer.new_screenshot_event.clear() # setting event to false
                 self.screenshot_capturer.new_screenshot_event.wait(10.0) # setting "gate", wont start before a very new screenshot is taken
 
@@ -600,7 +601,7 @@ class ShipBot(QObject):
                 self.ship_recognition_v2(self.screenshot_capturer.get_latest_screenshot())
                 self.random_movement()
 
-                # --- Periodic tasks ---
+                 # --- Periodic tasks ---
                 current_time = time.time()
                 for task in self.tasks:
                     task.maybe_run(current_time)
