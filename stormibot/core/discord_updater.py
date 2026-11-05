@@ -1,3 +1,4 @@
+import os
 import threading
 
 import cv2
@@ -6,7 +7,7 @@ from datetime import datetime
 import pytz
 from io import BytesIO
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1329435238149128232/4dSqMMpFtk-VVvBGqmK8HRi_wsbkLP0mT1rnLK0fBedM9zLCjhpDSpIlzfWZHlGaOp1D"
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
 europe_timezone = pytz.timezone("Europe/Paris")
 
 def doUpdateOnDiscord(image_array):
@@ -15,6 +16,10 @@ def doUpdateOnDiscord(image_array):
 
     :param image_array:
     """
+    if not WEBHOOK_URL:
+        print("DISCORD_WEBHOOK_URL is not set; skipping screenshot upload.")
+        return
+
     if image_array is None:
         print("No image to send!")
         return
